@@ -1,8 +1,4 @@
-/**
- * Export utilities for transcript, notes, and session data
- */
-
-function msToSrtTime(ms) {
+﻿function msToSrtTime(ms) {
   const h = Math.floor(ms / 3600000);
   const m = Math.floor((ms % 3600000) / 60000);
   const s = Math.floor((ms % 60000) / 1000);
@@ -12,8 +8,6 @@ function msToSrtTime(ms) {
 
 export function exportSRT(words) {
   if (!words?.length) return '';
-
-  // Group words into subtitle segments (max 10 words or 5s)
   const segments = [];
   let current = [];
   let segStart = words[0]?.startMs || 0;

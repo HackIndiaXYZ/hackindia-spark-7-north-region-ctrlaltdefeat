@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { useStore } from './store/index.js';
 import { useTranscription } from './hooks/useTranscription.js';
 import TranscriptPanel from './components/transcription/TranscriptPanel.jsx';

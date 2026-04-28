@@ -1,40 +1,21 @@
-import { create } from 'zustand';
+﻿import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { saveSession, loadSession } from '../services/db.js';
 
-/**
- * Global app store.
- * UI state is ephemeral; session data is persisted to IndexedDB.
- */
 export const useStore = create(
   persist(
     (set, get) => ({
-      // ── Session ──────────────────────────────────────────────────────────
       sessionId: null,
       isRecording: false,
       isConnected: false,
-
-      // ── Transcript ───────────────────────────────────────────────────────
-      words: [],          // { id, word, startMs, endMs, confidence, speaker }
-      transcriptText: '', // joined plain text
-
-      // ── Notes ────────────────────────────────────────────────────────────
-      notes: [],          // array of note objects from API
-
-      // ── Quiz ─────────────────────────────────────────────────────────────
-      quizQueue: [],      // pending questions
-      quizHistory: [],    // { questionId, topic, correct, ts }
-
-      // ── Weakness Profile ─────────────────────────────────────────────────
-      topicScores: {},    // { [topicTag]: { correct: n, total: n } }
-
-      // ── Chat ─────────────────────────────────────────────────────────────
-      chatHistory: [],    // { role, text, ts }
-
-      // ── UI panels ────────────────────────────────────────────────────────
-      activePanel: 'transcript', // transcript | notes | quiz | chat | reteach
-
-      // ── Actions ──────────────────────────────────────────────────────────
+      words: [],
+      transcriptText: '',
+      notes: [],
+      quizQueue: [],
+      quizHistory: [],
+      topicScores: {},
+      chatHistory: [],
+      activePanel: 'transcript',
       startSession: () => {
         const id = `session_${Date.now()}`;
         set({

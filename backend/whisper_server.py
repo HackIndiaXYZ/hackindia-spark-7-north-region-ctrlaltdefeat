@@ -1,5 +1,4 @@
-
-import argparse
+﻿import argparse
 import asyncio
 import base64
 import os
@@ -11,14 +10,9 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-
-# ── Globals ───────────────────────────────────────────────────────────────────
 _model      = None
 _model_name = "base"
-_executor   = ThreadPoolExecutor(max_workers=4)   # allow up to 4 parallel inferences
-
-
-# ── Lifespan (load model once on boot) ───────────────────────────────────────
+_executor   = ThreadPoolExecutor(max_workers=4)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     global _model, _model_name
@@ -36,9 +30,6 @@ async def lifespan(app: FastAPI):
 
     yield
     _executor.shutdown(wait=False)
-
-
-# ── FastAPI setup ─────────────────────────────────────────────────────────────
 app = FastAPI(title="EduScript Whisper Server", lifespan=lifespan)
 
 app.add_middleware(
@@ -47,24 +38,17 @@ app.add_middleware(
     allow_methods=["GET", "POST"],
     allow_headers=["*"],
 )
-
-
-# ── Schemas ───────────────────────────────────────────────────────────────────
 class TranscribeRequest(BaseModel):
-    audio:    str               # base64-encoded audio blob
+    audio:    str
     mimeType: str = "audio/webm"
-    language: str | None = None  # None = auto-detect
-
+    language: str | None = None
 
 class TranscribeResponse(BaseModel):
     text:     str
     language: str
     duration: float
-
-
-# ── Inference (runs in thread pool, non-blocking for event loop) ──────────────
 def _run_inference(audio_path: str, language: str | None) -> dict:
-    """Blocking call — runs in executor thread, ctranslate2 is thread-safe."""
+
     segments, info = _model.transcribe(
         audio_path,
         language=language,
@@ -79,15 +63,11 @@ def _run_inference(audio_path: str, language: str | None) -> dict:
         "duration": round(info.duration, 2),
     }
 
-
 def _mime_to_ext(mime: str) -> str:
     if "mp4" in mime: return "mp4"
     if "ogg" in mime: return "ogg"
     if "wav" in mime: return "wav"
     return "webm"
-
-
-# ── Routes ────────────────────────────────────────────────────────────────────
 @app.get("/health")
 async def health():
     return {
@@ -96,19 +76,14 @@ async def health():
         "ready":  _model is not None,
     }
 
-
 @app.post("/transcribe", response_model=TranscribeResponse)
 async def transcribe(req: TranscribeRequest):
     if _model is None:
         raise HTTPException(503, "Model not loaded — check server logs")
-
-    # Decode base64 → bytes
     try:
         buf = base64.b64decode(req.audio)
     except Exception:
         raise HTTPException(400, "Invalid base64 audio data")
-
-    # Skip obviously-empty blobs (silence / no audio)
     if len(buf) < 500:
         return TranscribeResponse(
             text="",
@@ -120,7 +95,6 @@ async def transcribe(req: TranscribeRequest):
     tmp_path = None
 
     try:
-        # Write to temp file (faster-whisper needs a file path)
         with tempfile.NamedTemporaryFile(suffix=f".{ext}", delete=False) as f:
             f.write(buf)
             tmp_path = f.name
@@ -138,9 +112,6 @@ async def transcribe(req: TranscribeRequest):
         if tmp_path:
             try: os.unlink(tmp_path)
             except: pass
-
-
-# ── Entry point ───────────────────────────────────────────────────────────────
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="EduScript Whisper Server")
     parser.add_argument("--port",   type=int, default=9000,  help="Port to listen on")

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { rateLimiter } from '../../hooks/useTranscription.js';
 
 export default function TokenBudget() {

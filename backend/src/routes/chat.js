@@ -1,4 +1,4 @@
-import { generateLLM, withRetry } from '../services/llm.js';
+﻿import { generateLLM, withRetry } from '../services/llm.js';
 
 const CHAT_SYSTEM_PROMPT = `You are EduScript AI — an intelligent learning assistant that helps students understand lecture content.
 

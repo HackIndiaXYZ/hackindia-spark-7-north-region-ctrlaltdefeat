@@ -1,4 +1,4 @@
-import { openDB } from 'idb';
+﻿import { openDB } from 'idb';
 
 const DB_NAME = 'eduscript';
 const DB_VERSION = 1;

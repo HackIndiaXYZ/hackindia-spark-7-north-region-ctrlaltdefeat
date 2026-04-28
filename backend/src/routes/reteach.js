@@ -1,5 +1,4 @@
-// FILE: backend/src/routes/reteach.js
-import { generateLLM, withRetry, safeParseJSON } from '../services/llm.js';
+﻿import { generateLLM, withRetry, safeParseJSON } from '../services/llm.js';
 
 const RETEACH_SYSTEM_PROMPT = `You are an expert tutor generating a JSON micro-lesson.
 
@@ -95,14 +94,10 @@ export async function reteachRoute(app) {
         debug: process.env.NODE_ENV !== 'production' ? raw.slice(0, 200) : undefined,
       });
     }
-
-    // Fill in optional fields if missing (graceful degradation)
     if (!lesson.commonMistakes) lesson.commonMistakes = [];
     if (!lesson.keyTerms)       lesson.keyTerms = [];
     if (!lesson.analogy)        lesson.analogy = '';
     if (!lesson.example)        lesson.example = '';
-
-    // These fields are required — reject if missing
     const requiredFields = ['topic', 'coreIdea', 'explanation', 'checkQuestion'];
     const missingRequired = requiredFields.filter(k => !lesson[k]);
     if (missingRequired.length > 0) {

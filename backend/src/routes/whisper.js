@@ -1,17 +1,11 @@
-
-
-import { spawn }            from 'child_process';
+﻿import { spawn }            from 'child_process';
 import { writeFile, unlink } from 'fs/promises';
 import { tmpdir }           from 'os';
 import { join }             from 'path';
 import { randomBytes }      from 'crypto';
-
-// ── Persistent Whisper server URL ─────────────────────────────────────────────
 const WHISPER_SERVER = process.env.WHISPER_SERVER_URL || 'http://localhost:9000';
-
-// ── Fallback: spawn transcribe.py (legacy path) ───────────────────────────────
 const SCRIPT_PATH = new URL('../../transcribe.py', import.meta.url).pathname
-  .replace(/^\/([A-Z]:)/, '$1');                    // Fix Windows path: /C:/… → C:/…
+  .replace(/^\/([A-Z]:)/, '$1');
 const PYTHON = process.platform === 'win32' ? 'python' : 'python3';
 
 function mimeToExt(mimeType) {
@@ -44,8 +38,6 @@ async function spawnWhisper(audioPath, language) {
     proc.on('error', reject);
   });
 }
-
-// ── Primary path: call persistent Whisper server ──────────────────────────────
 async function callWhisperServer(audio, mimeType, language) {
   const res = await fetch(`${WHISPER_SERVER}/transcribe`, {
     method:  'POST',
@@ -61,8 +53,6 @@ async function callWhisperServer(audio, mimeType, language) {
 
   return res.json();
 }
-
-// ── Fallback path: write temp file + spawn Python ─────────────────────────────
 async function callSpawnFallback(audio, mimeType, language, log) {
   const buf = Buffer.from(audio, 'base64');
   const ext     = mimeToExt(mimeType);
@@ -74,8 +64,6 @@ async function callSpawnFallback(audio, mimeType, language, log) {
     unlink(tmpFile).catch(() => {});
   }
 }
-
-// ── Route ─────────────────────────────────────────────────────────────────────
 export async function whisperRoute(fastify) {
   fastify.post('/', async (req, reply) => {
     const { audio, mimeType, language } = req.body || {};
@@ -83,14 +71,10 @@ export async function whisperRoute(fastify) {
     if (!audio) {
       return reply.status(400).send({ error: 'Missing audio field (base64)' });
     }
-
-    // Reject obviously empty blobs before touching Python at all
     const byteLen = Math.floor((audio.length * 3) / 4);
     if (byteLen < 500) {
       return reply.send({ text: '', language: language || 'en', duration: 0 });
     }
-
-    // ── Try persistent server first ───────────────────────────────────────────
     try {
       const result = await callWhisperServer(audio, mimeType, language);
       return reply.send(result);
@@ -100,8 +84,6 @@ export async function whisperRoute(fastify) {
         '[Whisper] Persistent server unavailable — falling back to spawn',
       );
     }
-
-    // ── Fallback: spawn transcribe.py ─────────────────────────────────────────
     try {
       const result = await callSpawnFallback(audio, mimeType, language, fastify.log);
       return reply.send(result);

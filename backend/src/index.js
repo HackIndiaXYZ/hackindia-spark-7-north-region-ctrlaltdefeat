@@ -1,4 +1,4 @@
-import 'dotenv/config';
+﻿import 'dotenv/config';
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import websocket from '@fastify/websocket';
@@ -20,31 +20,21 @@ const app = Fastify({
       : undefined,
   },
 });
-
-// ── Plugins ────────────────────────────────────────────────────────────────
 await app.register(cors, {
   origin: [FRONTEND_URL, 'http://localhost:5173', 'http://localhost:4173'],
   methods: ['GET', 'POST', 'OPTIONS'],
 });
 
 await app.register(websocket);
-
-// ── Routes ─────────────────────────────────────────────────────────────────
 app.get('/health', async () => ({ status: 'ok', ts: Date.now() }));
-
-// WebSocket: browser speech recognition → transcript tokens
 app.register(async (instance) => {
   instance.get('/ws/transcribe', { websocket: true }, transcriptionWsHandler);
 });
-
-// REST: AI content generation via Ollama
 app.register(notesRoute,    { prefix: '/api/notes'             });
 app.register(quizRoute,     { prefix: '/api/quiz'              });
 app.register(chatRoute,     { prefix: '/api/chat'              });
 app.register(reteachRoute,  { prefix: '/api/reteach'           });
 app.register(whisperRoute,  { prefix: '/api/transcribe-chunk'  });
-
-// ── Global error handler ───────────────────────────────────────────────────
 app.setErrorHandler((error, _req, reply) => {
   app.log.error(error);
   const statusCode = error.statusCode || 500;
@@ -52,8 +42,6 @@ app.setErrorHandler((error, _req, reply) => {
     error: statusCode === 500 ? 'Internal server error' : error.message,
   });
 });
-
-// ── Boot ───────────────────────────────────────────────────────────────────
 try {
   await app.listen({ port: PORT, host: '0.0.0.0' });
   console.log(`\n🚀 EduScript API running on http://localhost:${PORT}`);

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { useStore } from '../../store/index.js';
 import { rateLimiter } from '../../hooks/useTranscription.js';
 

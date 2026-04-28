@@ -1,4 +1,4 @@
-import { generateLLM, withRetry, safeParseJSON } from '../services/llm.js';
+﻿import { generateLLM, withRetry, safeParseJSON } from '../services/llm.js';
 
 const NOTES_SYSTEM_PROMPT = `You are an expert academic note-taker. Given a lecture transcript chunk, generate well-structured notes.
 

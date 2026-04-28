@@ -1,4 +1,4 @@
-export async function transcriptionWsHandler(connection, req) {
+﻿export async function transcriptionWsHandler(connection, req) {
   const socket = connection.socket;
   const log = req.server.log;
 

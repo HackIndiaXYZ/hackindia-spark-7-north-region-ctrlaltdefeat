@@ -1,6 +1,22 @@
-# EduScript — Ollama Setup Guide
+# EduScript AI
 
-Gemini has been completely removed. The backend now uses a local Ollama LLM.
+An AI-powered lecture assistant that transcribes audio in real-time, generates smart notes, quizzes, chat answers, and reteach explanations — all running locally with Ollama. No API keys. No cloud dependency.
+
+---
+
+## Tech Stack
+
+- **Frontend:** React + Vite
+- **Backend:** Node.js + Express + WebSocket
+- **AI:** Ollama (local LLM)
+- **Speech:** Web Speech API + Whisper (optional)
+
+---
+
+## Prerequisites
+
+- [Node.js](https://nodejs.org/) v18+
+- [Ollama](https://ollama.com/download) installed and running
 
 ---
 
@@ -11,48 +27,37 @@ Gemini has been completely removed. The backend now uses a local Ollama LLM.
 curl -fsSL https://ollama.com/install.sh | sh
 ```
 
-**Windows:**  
-Download the installer from https://ollama.com/download
+**Windows:**
+Download and install from https://ollama.com/download
 
 ---
 
-## Step 2 — Start Ollama and pull the model
-
-Open a terminal and run:
+## Step 2 — Pull the model
 
 ```bash
-# Start the Ollama server (leave this running in the background)
 ollama serve
 
-# In a new terminal, download the model (one-time, ~4.7 GB)
 ollama pull llama3.1:8b
 ```
 
-> **Want a smaller model?** Use `llama3.2:3b` (2 GB) — just change `LLM_MODEL` in `.env`.  
-> **Want a better model?** Use `llama3.1:70b` if you have a powerful GPU.
+> Want a smaller/faster model? Use `llama3.2:3b` — change `LLM_MODEL` in `.env`.
+> Want a smarter model? Use `llama3.1:70b` (requires a powerful GPU).
 
 ---
 
-## Step 3 — Set up the backend
+## Step 3 — Backend setup
 
 ```bash
 cd eduscript/backend
-
-# Install dependencies (no Gemini — much lighter now!)
 npm install
-
-# Copy the env file
-cp .env.example .env   # or create .env manually (contents below)
-
-# Start the backend in dev mode
 npm run dev
 ```
 
-The backend will start at: **http://localhost:3001**
+Backend runs at: **http://localhost:3001**
 
 ---
 
-## Step 4 — Start the frontend
+## Step 4 — Frontend setup
 
 ```bash
 cd eduscript/frontend
@@ -60,11 +65,13 @@ npm install
 npm run dev
 ```
 
-The frontend will start at: **http://localhost:5173**
+Frontend runs at: **http://localhost:5173**
 
 ---
 
-## .env file contents
+## Environment Variables
+
+Create `eduscript/backend/.env`:
 
 ```env
 PORT=3001
@@ -76,24 +83,51 @@ LLM_MODEL=llama3.1:8b
 
 ---
 
-## File structure of changes
+## Project Structure
 
 ```
-eduscript/backend/
-├── .env                          ← NEW  (no API keys needed)
-├── package.json                  ← UPDATED (removed @google/generative-ai)
-└── src/
-    ├── index.js                  ← UPDATED (removed Gemini imports)
-    ├── services/
-    │   ├── llm.js                ← NEW (Ollama client)
-    │   └── gemini.js             ← DELETE this file (no longer used)
-    └── routes/
-        ├── notes.js              ← UPDATED (uses generateLLM)
-        ├── quiz.js               ← UPDATED (uses generateLLM)
-        ├── chat.js               ← UPDATED (uses generateLLM)
-        ├── reteach.js            ← UPDATED (uses generateLLM)
-        ├── transcription.js      ← UNCHANGED (WebSocket, no LLM)
-        └── transcribeChunk.js    ← DELETE this file (Gemini-only, unused)
+eduscript/
+├── backend/
+│   ├── .env
+│   ├── package.json
+│   ├── transcribe.py
+│   ├── whisper_server.py
+│   └── src/
+│       ├── index.js
+│       ├── services/
+│       │   └── llm.js
+│       └── routes/
+│           ├── chat.js
+│           ├── notes.js
+│           ├── quiz.js
+│           ├── reteach.js
+│           ├── transcription.js
+│           └── whisper.js
+└── frontend/
+    ├── index.html
+    ├── vite.config.js
+    └── src/
+        ├── App.jsx
+        ├── main.jsx
+        ├── index.css
+        ├── hooks/
+        │   └── useTranscription.js
+        ├── services/
+        │   ├── api.js
+        │   └── db.js
+        ├── store/
+        │   └── index.js
+        ├── utils/
+        │   └── export.js
+        └── components/
+            ├── chat/ChatPanel.jsx
+            ├── dashboard/
+            │   ├── DebugBar.jsx
+            │   └── TokenBudget.jsx
+            ├── notes/NotesPanel.jsx
+            ├── quiz/QuizPanel.jsx
+            ├── reteach/ReteachPanel.jsx
+            └── transcription/TranscriptPanel.jsx
 ```
 
 ---
@@ -104,12 +138,12 @@ eduscript/backend/
 |---|---|
 | `Connection refused` on port 11434 | Run `ollama serve` first |
 | `model not found` error | Run `ollama pull llama3.1:8b` |
-| Slow responses | Normal for CPU — llama3.2:3b is faster |
-| Empty JSON from AI | Increase `LLM_MODEL` to a smarter model |
-| CORS errors | Check `FRONTEND_URL` in `.env` matches your Vite port |
+| Slow responses | Normal for CPU — use `llama3.2:3b` for speed |
+| Empty or broken JSON from AI | Switch to a smarter model via `LLM_MODEL` in `.env` |
+| CORS errors | Ensure `FRONTEND_URL` in `.env` matches your Vite port |
 
 ---
 
-## No API key required
+## No API Key Required
 
-Ollama runs 100% locally on your machine. No internet connection needed after the model is downloaded. No costs. No rate limits.
+Ollama runs 100% locally. No internet needed after model download. No costs. No rate limits.

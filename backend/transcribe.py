@@ -1,6 +1,4 @@
-
-
-import sys
+﻿import sys
 import json
 import os
 import tempfile
@@ -11,7 +9,7 @@ def main():
         sys.exit(1)
 
     audio_path = sys.argv[1]
-    language   = sys.argv[2] if len(sys.argv) > 2 else None  # None = auto-detect
+    language   = sys.argv[2] if len(sys.argv) > 2 else None
 
     if not os.path.exists(audio_path):
         print(json.dumps({"error": f"File not found: {audio_path}"}))
@@ -19,16 +17,13 @@ def main():
 
     try:
         from faster_whisper import WhisperModel
-
-        # Load model — downloaded once then cached in ~/.cache/huggingface
-        # device="cpu" works on all machines; use "cuda" if you have a GPU
         model = WhisperModel("base", device="cpu", compute_type="int8")
 
         segments, info = model.transcribe(
             audio_path,
             language=language,
             beam_size=3,
-            vad_filter=True,           # skip silent parts automatically
+            vad_filter=True,
             vad_parameters={
                 "min_silence_duration_ms": 500,
             },

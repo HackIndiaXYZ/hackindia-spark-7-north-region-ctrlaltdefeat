@@ -1,5 +1,4 @@
-// FILE: frontend/src/services/api.js
-import { rateLimiter } from '../hooks/useTranscription.js';
+﻿import { rateLimiter } from '../hooks/useTranscription.js';
 
 const BASE = '/api';
 
@@ -9,25 +8,18 @@ async function post(path, body) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   });
-
-  // FIX: Always parse error body for exact message
   if (!res.ok) {
     let errMsg = `HTTP ${res.status}`;
     try {
       const errBody = await res.json();
       errMsg = errBody.error || errBody.message || errMsg;
-    } catch { /* response wasn't JSON */ }
+    } catch {  }
     throw new Error(errMsg);
   }
 
   return res.json();
 }
 
-/**
- * FIX: Increased limits to match Gemini free tier reality.
- * Real free tier: 15 req/min, 1500 req/day on Flash.
- * We budget conservatively: 10/min, 100/day — still safe, no longer blocking.
- */
 rateLimiter.MAX_PER_MIN = 10;
 rateLimiter.MAX_PER_DAY = 100;
 
@@ -43,7 +35,6 @@ async function geminiCall(label, fn) {
   try {
     return await fn();
   } catch (err) {
-    // Don't count failed calls against the budget
     rateLimiter.calls.pop();
     rateLimiter._dc = Math.max(0, rateLimiter._dc - 1);
     localStorage.setItem('es_dc', String(rateLimiter._dc));
@@ -68,8 +59,6 @@ export const api = {
       transcriptContext: transcriptContext || '',
       history:           history           || [],
     })),
-
-  // FIX: Guard empty topic in api layer too — belt-and-suspenders
   reteach: (topic, lectureContext, studentLevel = 'intermediate') => {
     const cleanTopic = (topic || '').trim();
     if (!cleanTopic) return Promise.reject(new Error('Please enter a topic to re-learn.'));
