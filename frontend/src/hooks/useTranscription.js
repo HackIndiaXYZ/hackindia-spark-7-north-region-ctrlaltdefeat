@@ -1,4 +1,4 @@
-﻿import { useRef, useCallback, useEffect } from 'react';
+import { useRef, useCallback, useEffect } from 'react';
 import { useStore } from '../store/index.js';
 import { saveWords } from '../services/db.js';
 
@@ -6,7 +6,7 @@ const BACKEND_PORT = import.meta.env.VITE_BACKEND_PORT || '3001';
 const BACKEND_HOST = import.meta.env.VITE_BACKEND_HOST || location.hostname;
 const WS_PROTOCOL  = location.protocol === 'https:' ? 'wss' : 'ws';
 const WS_URL       = `${WS_PROTOCOL}://${BACKEND_HOST}:${BACKEND_PORT}/ws/transcribe`;
-const API_BASE     = `${location.protocol}
+const API_BASE     = `${location.protocol}//${BACKEND_HOST}:${BACKEND_PORT}`;
 
 const WORDS_FOR_NOTES = 200;
 const WORDS_FOR_QUIZ  = 150;
